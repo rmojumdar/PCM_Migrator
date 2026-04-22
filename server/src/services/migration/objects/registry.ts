@@ -1,0 +1,238 @@
+import { MigrationObjectConfig } from '../../../types';
+
+const objects: MigrationObjectConfig[] = [
+  // ─── Core ────────────────────────────────────────────────────────────────
+  {
+    apiName: 'Product2',
+    label: 'Products',
+    group: 'Core',
+    dependsOn: ['ProductClassification'],
+    externalIdField: 'ProductCode',
+    uniqueFields: ['Name', 'ProductCode'],
+    allowUpdate: true,
+    skipFields: ['Type'],
+    queryFields: ['Id', 'Name', 'ProductCode', 'Description', 'IsActive', 'Family', 'Type', 'BasedOnId'],
+    lookups: [
+      { field: 'BasedOnId', relatedObject: 'ProductClassification', relatedExternalId: 'Name' },
+    ],
+  },
+  {
+    apiName: 'ProductSellingModel',
+    label: 'Selling Models',
+    group: 'Core',
+    dependsOn: [],
+    externalIdField: 'Name',
+    uniqueFields: ['Name'],
+    queryFields: ['Id', 'Name', 'SellingModelType', 'Status', 'PricingTermUnit', 'PricingTerm'],
+    lookups: [],
+  },
+  {
+    apiName: 'ProductSellingModelOption',
+    label: 'Selling Model Options',
+    group: 'Core',
+    dependsOn: ['ProductSellingModel', 'Product2'],
+    externalIdField: 'Product2Id',
+    uniqueFields: ['Product2Id', 'ProductSellingModelId'],
+    skipFields: ['Name'],
+    queryFields: ['Id', 'Product2Id', 'ProductSellingModelId'],
+    lookups: [
+      { field: 'Product2Id', relatedObject: 'Product2', relatedExternalId: 'ProductCode' },
+      { field: 'ProductSellingModelId', relatedObject: 'ProductSellingModel', relatedExternalId: 'Name' },
+    ],
+  },
+
+  // ─── Catalog ─────────────────────────────────────────────────────────────
+  {
+    apiName: 'ProductCatalog',
+    label: 'Product Catalogs',
+    group: 'Catalog',
+    dependsOn: [],
+    externalIdField: 'Name',
+    uniqueFields: ['Name', 'Code'],
+    queryFields: ['Id', 'Name', 'Code', 'Description'],
+    lookups: [],
+  },
+  {
+    apiName: 'ProductCategory',
+    label: 'Product Categories',
+    group: 'Catalog',
+    dependsOn: ['ProductCatalog'],
+    externalIdField: 'Name',
+    uniqueFields: ['Name', 'Code'],
+    queryFields: ['Id', 'Name', 'Code', 'Description', 'CatalogId'],
+    lookups: [
+      { field: 'CatalogId', relatedObject: 'ProductCatalog', relatedExternalId: 'Name' },
+    ],
+  },
+  {
+    apiName: 'ProductCategoryProduct',
+    label: 'Category Products',
+    group: 'Catalog',
+    dependsOn: ['ProductCategory', 'Product2'],
+    externalIdField: 'ProductId',
+    uniqueFields: ['ProductId', 'ProductCategoryId'],
+    skipFields: ['Name'],
+    queryFields: ['Id', 'ProductId', 'ProductCategoryId'],
+    lookups: [
+      { field: 'ProductId', relatedObject: 'Product2', relatedExternalId: 'ProductCode' },
+      { field: 'ProductCategoryId', relatedObject: 'ProductCategory', relatedExternalId: 'Name' },
+    ],
+  },
+
+  // ─── Pricing ─────────────────────────────────────────────────────────────
+  {
+    apiName: 'Pricebook2',
+    label: 'Price Books',
+    group: 'Pricing',
+    dependsOn: [],
+    externalIdField: 'Name',
+    uniqueFields: ['Name'],
+    queryFields: ['Id', 'Name', 'Description', 'IsActive'],
+    lookups: [],
+  },
+  {
+    apiName: 'PricebookEntry',
+    label: 'Price Book Entries',
+    group: 'Pricing',
+    dependsOn: ['Pricebook2', 'Product2'],
+    externalIdField: 'Product2Id',
+    uniqueFields: ['Pricebook2Id', 'Product2Id'],
+    skipFields: ['Name'],
+    queryFields: ['Id', 'Pricebook2Id', 'Product2Id', 'UnitPrice', 'IsActive', 'CurrencyIsoCode'],
+    lookups: [
+      { field: 'Pricebook2Id', relatedObject: 'Pricebook2', relatedExternalId: 'Name' },
+      { field: 'Product2Id', relatedObject: 'Product2', relatedExternalId: 'ProductCode' },
+    ],
+  },
+
+  // ─── Classifications ─────────────────────────────────────────────────────
+  {
+    apiName: 'ProductClassification',
+    label: 'Product Classifications',
+    group: 'Classifications',
+    dependsOn: [],
+    externalIdField: 'Name',
+    uniqueFields: ['Name', 'Code'],
+    queryFields: ['Id', 'Name', 'Code', 'Status'],
+    lookups: [],
+  },
+  {
+    apiName: 'ProductClassificationAttr',
+    label: 'Classification Attributes',
+    group: 'Classifications',
+    dependsOn: ['ProductClassification', 'AttributeDefinition', 'AttributeCategory'],
+    externalIdField: 'Name',
+    uniqueFields: ['ProductClassificationId', 'AttributeDefinitionId'],
+    allowUpdate: true,
+    skipFields: [],
+    skipUpdateFields: ['ProductClassificationId', 'AttributeDefinitionId', 'AttributeCategoryId', 'OverriddenInheritedAttributeId'],
+    queryFields: ['Id', 'Name', 'ProductClassificationId', 'AttributeDefinitionId', 'AttributeCategoryId', 'DisplayType', 'DefaultValue', 'Sequence', 'Description', 'Status'],
+    lookups: [
+      { field: 'ProductClassificationId', relatedObject: 'ProductClassification', relatedExternalId: 'Name' },
+      { field: 'AttributeDefinitionId', relatedObject: 'AttributeDefinition', relatedExternalId: 'Name' },
+      { field: 'AttributeCategoryId', relatedObject: 'AttributeCategory', relatedExternalId: 'Name', optional: true },
+      { field: 'OverriddenInheritedAttributeId', relatedObject: 'ProductClassificationAttr', relatedExternalId: 'Name', optional: true },
+    ],
+  },
+
+  // ─── Attributes ──────────────────────────────────────────────────────────
+  {
+    apiName: 'AttributeDefinition',
+    label: 'Attribute Definitions',
+    group: 'Attributes',
+    dependsOn: [],
+    externalIdField: 'Name',
+    uniqueFields: ['Name', 'Code'],
+    allowUpdate: true,
+    skipUpdateFields: ['DataType','Name', 'Code'],
+    queryFields: ['Id', 'Name', 'Code', 'Label', 'Description', 'isActive', 'DataType'],
+    lookups: [],
+  },
+  {
+    apiName: 'AttributePicklist',
+    label: 'Attribute Picklists',
+    group: 'Attributes',
+    dependsOn: [],
+    externalIdField: 'Name',
+    uniqueFields: ['Name'],
+    queryFields: ['Id', 'Name', 'Code', 'Description', 'Status'],
+    lookups: [],
+  },
+  {
+    apiName: 'AttributePicklistValue',
+    label: 'Attribute Picklist Values',
+    group: 'Attributes',
+    dependsOn: [],
+    externalIdField: 'Code',
+    uniqueFields: ['Code'],
+    queryFields: ['Id', 'Name', 'Code', 'Sequence', 'IsDefault'],
+    lookups: [],
+  },
+  {
+    apiName: 'AttrPicklistExcludedValue',
+    label: 'Attribute Picklist Excluded Values',
+    group: 'Attributes',
+    dependsOn: ['AttributePicklist', 'AttributePicklistValue'],
+    externalIdField: 'AttributePicklistId',
+    uniqueFields: ['AttributePicklistId', 'AttributePicklistValueId'],
+    skipFields: [],
+    queryFields: ['Id', 'AttributePicklistId', 'AttributePicklistValueId'],
+    lookups: [
+      { field: 'AttributePicklistId', relatedObject: 'AttributePicklist', relatedExternalId: 'Name' },
+      { field: 'AttributePicklistValueId', relatedObject: 'AttributePicklistValue', relatedExternalId: 'Name' },
+    ],
+  },
+  {
+    apiName: 'AttributeCategory',
+    label: 'Attribute Categories',
+    group: 'Attributes',
+    dependsOn: [],
+    externalIdField: 'Name',
+    uniqueFields: ['Name'],
+    queryFields: ['Id', 'Name', 'Description'],
+    lookups: [],
+  },
+  {
+    apiName: 'AttributeCategoryAttribute',
+    label: 'Attribute Category Attributes',
+    group: 'Attributes',
+    dependsOn: ['AttributeCategory', 'AttributeDefinition'],
+    externalIdField: 'AttributeCategoryId',
+    uniqueFields: ['AttributeCategoryId', 'AttributeDefinitionId'],
+    skipFields: [],
+    queryFields: ['Id', 'AttributeCategoryId', 'AttributeDefinitionId'],
+    lookups: [
+      { field: 'AttributeCategoryId', relatedObject: 'AttributeCategory', relatedExternalId: 'Name' },
+      { field: 'AttributeDefinitionId', relatedObject: 'AttributeDefinition', relatedExternalId: 'Name' },
+    ],
+  },
+  {
+    apiName: 'ProductAttributeDefinition',
+    label: 'Product Attribute Definitions',
+    group: 'Attributes',
+    dependsOn: ['Product2', 'AttributeDefinition', 'AttributeCategory', 'ProductClassificationAttr'],
+    externalIdField: 'Product2Id',
+    uniqueFields: ['Product2Id', 'AttributeDefinitionId'],
+    allowUpdate: true,
+    skipFields: [],
+    skipUpdateFields: ['Product2Id', 'AttributeDefinitionId', 'ProductClassificationAttributeId', 'AttributeCategoryId', 'OverriddenProductAttributeDefinitionId'],
+    queryFields: [
+      'Id', 'Name', 'Product2Id', 'AttributeDefinitionId', 'ProductClassificationAttributeId',
+      'AttributeCategoryId', 'OverriddenProductAttributeDefinitionId',
+      'DefaultValue', 'IsRequired', 'Sequence', 'Status',
+    ],
+    lookups: [
+      { field: 'Product2Id', relatedObject: 'Product2', relatedExternalId: 'ProductCode' },
+      { field: 'AttributeDefinitionId', relatedObject: 'AttributeDefinition', relatedExternalId: 'Name' },
+      { field: 'ProductClassificationAttributeId', relatedObject: 'ProductClassificationAttr', relatedExternalId: 'ProductClassificationId', optional: true },
+      { field: 'AttributeCategoryId', relatedObject: 'AttributeCategory', relatedExternalId: 'Name', optional: true },
+      { field: 'OverriddenProductAttributeDefinitionId', relatedObject: 'ProductAttributeDefinition', relatedExternalId: 'Product2Id', optional: true },
+    ],
+  },
+];
+
+export const objectRegistry = new Map<string, MigrationObjectConfig>(
+  objects.map((o) => [o.apiName, o])
+);
+
+export const allObjects = objects;
