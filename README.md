@@ -1,4 +1,4 @@
-# PCM Migrator — Salesforce Revenue Cloud Product Catalog Migrator
+# PCM Migrator — Salesforce Digital Insurance Product Catalog Migrator
 
 A web app for migrating Salesforce Revenue Cloud product catalog data from one org to another. Supports products, pricing, catalogs, classifications, and attributes with dependency-aware ordering, duplicate detection, and update-in-place for existing records.
 
